@@ -1,0 +1,41 @@
+{
+  "name": "strapi-provider-upload-azure-clean",
+  "version": "1.0.0",
+  "description": "Azure Blob Storage provider for Strapi with clean URLs (no SAS tokens in URLs)",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "strapi",
+    "azure",
+    "blob-storage",
+    "upload",
+    "provider",
+    "clean-urls"
+  ],
+  "author": "Ali Shaikh",
+  "license": "MIT",
+  "dependencies": {
+    "@azure/storage-blob": "^12.24.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "peerDependencies": {
+    "@strapi/strapi": "^4.0.0 || ^5.0.0"
+  },
+  "files": [
+    "dist"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ali-Shaikh/strapi-provider-upload-azure-clean.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Ali-Shaikh/strapi-provider-upload-azure-clean/issues"
+  },
+  "homepage": "https://github.com/Ali-Shaikh/strapi-provider-upload-azure-clean#readme"
+}
