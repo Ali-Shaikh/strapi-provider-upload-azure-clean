@@ -162,6 +162,51 @@ module.exports = [
 
 - **`publicContainer`** (optional): Set to `'true'` for public containers to generate clean URLs without SAS token parameters.
 
+## Usage Examples
+
+### Example 1: Using SAS Token Authentication
+
+```javascript
+// config/plugins.js
+module.exports = ({ env }) => ({
+  upload: {
+    config: {
+      provider: 'strapi-provider-upload-azure-clean',
+      providerOptions: {
+        account: 'mystorageaccount',
+        sasToken: 'sv=2022-11-02&ss=bfqt&srt=sco&sp=rwdlacupiytfx&se=2024-12-31T23:59:59Z&st=2024-01-01T00:00:00Z&spr=https&sig=...',
+        containerName: 'uploads',
+        defaultPath: 'media',
+      },
+    },
+  },
+});
+```
+
+**Result URLs (Private Container)**: `https://mystorageaccount.blob.core.windows.net/uploads/media/image.jpg?sv=2022-11-02&ss=bfqt...`
+
+### Example 2: Clean URLs for Public Containers
+
+```javascript
+// config/plugins.js
+module.exports = ({ env }) => ({
+  upload: {
+    config: {
+      provider: 'strapi-provider-upload-azure-clean',
+      providerOptions: {
+        account: 'mystorageaccount',
+        sasToken: 'sv=2022-11-02&ss=bfqt&srt=sco&sp=rwdlacupiytfx&se=2024-12-31T23:59:59Z&st=2024-01-01T00:00:00Z&spr=https&sig=...',
+        containerName: 'public-uploads',
+        publicContainer: 'true', // This enables clean URLs
+        defaultPath: 'images',
+      },
+    },
+  },
+});
+```
+
+**Result URLs (Public Container)**: `https://mystorageaccount.blob.core.windows.net/public-uploads/images/image.jpg`
+
 ## Key Features
 
 ### Smart URL Generation
