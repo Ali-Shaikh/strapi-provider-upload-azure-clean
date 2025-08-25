@@ -49,6 +49,10 @@ module.exports = {
       label: "Remove container name from URL (optional)",
       type: "text",
     },
+    publicContainer: {
+      label: "Use anonymous access for public containers (set to 'true' for public containers)",
+      type: "text",
+    },
   },
   init: (config: Config) => {
     const blobSvcClient = makeBlobServiceClient(config);

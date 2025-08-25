@@ -10,6 +10,7 @@ export interface Config {
   cdnBaseURL?: string;
   defaultCacheControl?: string;
   removeCN?: string;
+  publicContainer?: string;
 }
 
 export interface File {

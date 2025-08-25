@@ -1,7 +1,7 @@
 {
   "name": "strapi-provider-upload-azure-clean",
   "version": "1.0.0",
-  "description": "Azure Blob Storage provider for Strapi with clean URLs (no SAS tokens in URLs)",
+  "description": "Azure Blob Storage provider for Strapi with smart URL handling - clean URLs for public containers, authenticated URLs for private containers",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {

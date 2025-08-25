@@ -33,6 +33,7 @@ export default ({ env }) => ({
         serviceBaseURL: env('AZURE_STORAGE_SERVICE_BASE_URL'),
         defaultCacheControl: env('AZURE_STORAGE_DEFAULT_CACHE_CONTROL'),
         removeCN: env('AZURE_STORAGE_REMOVE_CN'),
+        publicContainer: env('AZURE_STORAGE_PUBLIC_CONTAINER'),
       },
     },
   },
@@ -48,15 +49,30 @@ AZURE_STORAGE_CONTAINER_NAME=your_container_name
 AZURE_STORAGE_DEFAULT_PATH=uploads
 AZURE_STORAGE_CDN_BASE_URL=https://your_storage_account.blob.core.windows.net
 AZURE_STORAGE_SERVICE_BASE_URL=https://your_storage_account.blob.core.windows.net
+AZURE_STORAGE_PUBLIC_CONTAINER=true
 ```
 
-## Key Difference
+## Key Features
 
-This provider strips SAS tokens from generated URLs while still using them for authentication:
+### Smart URL Generation
+This provider intelligently handles URLs based on container privacy:
 
-- **Authentication**: Uses SAS token for upload/delete operations
+**For Public Containers** (`publicContainer: 'true'`):
+- **Authentication**: Uses anonymous access for operations
 - **URLs**: Generates clean URLs without SAS token parameters
-- **Result**: `https://account.blob.core.windows.net/container/file.jpg` instead of `https://account.blob.core.windows.net/container/file.jpg?sv=...&sr=...`
+- **Result**: `https://account.blob.core.windows.net/container/file.jpg`
+
+**For Private Containers** (default):
+- **Authentication**: Uses SAS token or account key for operations  
+- **URLs**: Keeps SAS tokens in URLs for private access
+- **Result**: `https://account.blob.core.windows.net/container/file.jpg?sv=...&sr=...`
+
+## Authentication Priority
+
+The provider uses authentication in this order:
+1. **Public Container**: If `publicContainer: 'true'` → Anonymous access
+2. **SAS Token**: If `sasToken` provided → SAS token authentication  
+3. **Account Key**: If `accountKey` provided → Account key authentication
 
 ## Credits
 

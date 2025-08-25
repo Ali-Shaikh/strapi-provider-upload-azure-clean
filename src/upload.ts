@@ -22,15 +22,21 @@ export async function handleUpload(
     },
   };
   const cdnBaseURL = trimParam(config.cdnBaseURL);
+  const publicContainer = trimParam(config.publicContainer);
   
-  // Strip SAS token from URL for public access
-  let cleanUrl = client.url;
-  const urlParts = cleanUrl.split('?');
-  const baseUrl = urlParts[0];
+  // Only strip SAS token from URL if container is public
+  let finalUrl = client.url;
+  
+  if (publicContainer === 'true') {
+    // For public containers, strip SAS token from URL
+    const urlParts = finalUrl.split('?');
+    const baseUrl = urlParts[0];
+    finalUrl = baseUrl;
+  }
   
   file.url = cdnBaseURL
-    ? baseUrl.replace(serviceBaseURL, cdnBaseURL)
-    : baseUrl;
+    ? finalUrl.replace(serviceBaseURL, cdnBaseURL)
+    : finalUrl;
 
   if (
     file.url.includes(`/${config.containerName}/`) &&
