@@ -1,6 +1,6 @@
 import { Config, File } from './types';
 import { BlobServiceClient } from '@azure/storage-blob';
-import { getServiceBaseUrl, getFileName, trimParam } from './utils';
+import { getServiceBaseUrl, getFileName, trimParam, toBool } from './utils';
 
 const uploadOptions = {
   bufferSize: 4 * 1024 * 1024,
@@ -13,7 +13,19 @@ export async function handleUpload(
   file: File
 ): Promise<void> {
   const serviceBaseURL = getServiceBaseUrl(config);
-  const containerClient = blobSvcClient.getContainerClient(trimParam(config.containerName));
+  const containerName = trimParam(config.containerName);
+  const containerClient = blobSvcClient.getContainerClient(containerName);
+
+  // Check if container needs to be created
+  if (toBool(config.createContainerIfNotExist)) {
+    const containerExists = await containerClient.exists();
+    if (!containerExists) {
+      await containerClient.create({
+        access: config.publicAccessType || 'blob',
+      });
+    }
+  }
+
   const client = containerClient.getBlockBlobClient(getFileName(config.defaultPath, file));
   const options = {
     blobHTTPHeaders: {
@@ -22,12 +34,11 @@ export async function handleUpload(
     },
   };
   const cdnBaseURL = trimParam(config.cdnBaseURL);
-  const publicContainer = trimParam(config.publicContainer);
   
   // Only strip SAS token from URL if container is public
   let finalUrl = client.url;
   
-  if (publicContainer === 'true') {
+  if (toBool(config.publicContainer)) {
     // For public containers, strip SAS token from URL
     const urlParts = finalUrl.split('?');
     const baseUrl = urlParts[0];
@@ -39,11 +50,10 @@ export async function handleUpload(
     : finalUrl;
 
   if (
-    file.url.includes(`/${config.containerName}/`) &&
-    config.removeCN &&
-    config.removeCN === 'true'
+    file.url.includes(`/${containerName}/`) &&
+    toBool(config.removeCN)
   ) {
-    file.url = file.url.replace(`/${config.containerName}/`, '/');
+    file.url = file.url.replace(`/${containerName}/`, '/');
   }
 
   if (file.buffer) {

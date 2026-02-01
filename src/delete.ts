@@ -13,6 +13,8 @@ export async function handleDelete(
 
   await client.delete();
 
+  // Note: fs.unlink is typically handled by Strapi itself for temp files,
+  // but we keep this for compatibility with the original implementation.
   const tmpFilePath = file.tmpPath || file.path;
   if (tmpFilePath) {
     try {

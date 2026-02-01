@@ -11,6 +11,8 @@ export interface Config {
   defaultCacheControl?: string;
   removeCN?: string;
   publicContainer?: string;
+  createContainerIfNotExist?: string;
+  publicAccessType?: 'blob' | 'container';
 }
 
 export interface File {
