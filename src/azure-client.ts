@@ -16,15 +16,11 @@ import {
     let sasToken = trimParam(config.sasToken);
   
     // Always use strongest available authentication for operations
-    // Use SAS token authentication (preferred for uploads)
-    if (sasToken) {
-      // Ensure SAS token starts with '?'
-      if (!sasToken.startsWith('?')) {
-        sasToken = `?${sasToken}`;
-      }
-      const anonymousCredential = new AnonymousCredential();
-      return new BlobServiceClient(`${serviceBaseURL}${sasToken}`, anonymousCredential);
-    }
+  // Use SAS token authentication (preferred for uploads)
+  if (sasToken) {
+    const queryChar = sasToken.startsWith('?') ? '' : '?';
+    return new BlobServiceClient(`${serviceBaseURL.replace(/\/$/, '')}${queryChar}${sasToken}`, new AnonymousCredential());
+  }
   
     // Use account key authentication
     if (accountKey) {

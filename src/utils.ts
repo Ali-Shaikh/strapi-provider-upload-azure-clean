@@ -25,8 +25,8 @@ export function getServiceBaseUrl(config: Config): string {
 }
 
 export function getFileName(defaultPath: string, file: File): string {
-  const trimmedPath = trimParam(defaultPath).replace(/\/$/, ''); // Remove trailing slash
-  return trimmedPath && trimmedPath !== '/' 
+  const trimmedPath = trimParam(defaultPath).replace(/^\/+|\/+$/g, ''); // Remove leading and trailing slashes
+  return trimmedPath !== '' 
     ? `${trimmedPath}/${file.hash}${file.ext}` 
     : `${file.hash}${file.ext}`;
 }

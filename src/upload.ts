@@ -45,15 +45,20 @@ export async function handleUpload(
     finalUrl = baseUrl;
   }
   
+  // Ensure consistent URL format for replacement
+  const normalizedServiceBaseURL = serviceBaseURL.replace(/\/$/, '');
+  
   file.url = cdnBaseURL
-    ? finalUrl.replace(serviceBaseURL, cdnBaseURL)
+    ? finalUrl.replace(normalizedServiceBaseURL, cdnBaseURL.replace(/\/$/, ''))
     : finalUrl;
 
-  if (
-    file.url.includes(`/${containerName}/`) &&
-    toBool(config.removeCN)
-  ) {
-    file.url = file.url.replace(`/${containerName}/`, '/');
+  if (toBool(config.removeCN)) {
+    // Only replace the first occurrence of the container name right after the host
+    const urlObj = new URL(file.url);
+    if (urlObj.pathname.startsWith(`/${containerName}/`)) {
+      urlObj.pathname = urlObj.pathname.replace(`/${containerName}/`, '/');
+      file.url = urlObj.toString();
+    }
   }
 
   if (file.buffer) {
