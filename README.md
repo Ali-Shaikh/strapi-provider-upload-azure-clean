@@ -1,4 +1,19 @@
-# strapi-provider-upload-azure-clean
+<p align="center">
+  <img src="https://raw.githubusercontent.com/Ali-Shaikh/strapi-provider-upload-azure-clean/main/assets/brand/icon-128.png" width="96" height="96" alt="strapi-provider-upload-azure-clean icon" />
+</p>
+
+<h1 align="center">strapi-provider-upload-azure-clean</h1>
+
+<p align="center">
+  Clean Azure Blob uploads for Strapi, with private-by-default storage and clean public URLs.
+</p>
+
+<p align="center">
+  <a href="https://www.npmjs.com/package/strapi-provider-upload-azure-clean"><img alt="npm version" src="https://img.shields.io/npm/v/strapi-provider-upload-azure-clean?color=0078D4"></a>
+  <a href="https://github.com/Ali-Shaikh/strapi-provider-upload-azure-clean/blob/main/LICENSE"><img alt="licence" src="https://img.shields.io/github/license/Ali-Shaikh/strapi-provider-upload-azure-clean?color=10B981"></a>
+  <img alt="node" src="https://img.shields.io/badge/node-%3E%3D22-0F172A">
+  <img alt="typescript" src="https://img.shields.io/badge/types-TypeScript-4945FF">
+</p>
 
 Azure Blob Storage provider for Strapi with smart URL handling - clean URLs for public containers, authenticated URLs for private containers.
 
@@ -7,7 +22,7 @@ Azure Blob Storage provider for Strapi with smart URL handling - clean URLs for 
 - **Upload Files to Azure Blob Storage**: Seamlessly upload files from your Strapi application to Azure Blob Storage
 - **Delete Files**: Remove files from Azure Blob Storage when they are deleted from Strapi
 - **TypeScript Support**: Written in TypeScript for type safety and better maintainability
-- **Configuration Options**: Customize various aspects of the provider, including paths, cache control, and URLs
+- **Configuration Options**: Customise various aspects of the provider, including paths, cache control, and URLs
 - **Supports SAS Tokens and Account Keys**: Authenticate using either an account key or a SAS token
 - **Smart URL Generation**: Clean URLs for public containers, authenticated URLs for private containers
 
@@ -176,6 +191,10 @@ module.exports = [
 
   If `publicContainer` and `createContainerIfNotExist` are both set to `'true'`, `publicAccessType` must also be set to `'blob'` or `'container'`. This prevents the provider from creating a private container while returning SAS-free public URLs.
 
+### Security Defaults
+
+Auto-created containers are private unless `publicAccessType` is explicitly set to `'blob'` or `'container'`. Public URL generation is separate from container access: only set `publicContainer` when the Azure container is publicly readable or is created with a public access type.
+
 ## Usage Examples
 
 ### Example 1: Using SAS Token Authentication
@@ -247,6 +266,6 @@ The provider uses authentication in this order:
 
 Based on [strapi-provider-upload-azure-sa](https://www.npmjs.com/package/strapi-provider-upload-azure-sa) by c1sar, with modifications to provide clean URLs without SAS token parameters.
 
-## License
+## Licence
 
 MIT - See LICENSE file for details
