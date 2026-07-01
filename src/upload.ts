@@ -11,9 +11,30 @@ const containerCreationPromises = new WeakMap<BlobServiceClient, Map<string, Pro
 
 function getPublicAccessType(config: Config): 'blob' | 'container' | undefined {
   const publicAccessType = trimParam(config.publicAccessType);
-  return publicAccessType === 'blob' || publicAccessType === 'container'
-    ? publicAccessType
-    : undefined;
+
+  if (!publicAccessType) {
+    return undefined;
+  }
+
+  if (publicAccessType === 'blob' || publicAccessType === 'container') {
+    return publicAccessType;
+  }
+
+  throw new Error(
+    `Invalid publicAccessType "${publicAccessType}". Expected "blob" or "container".`
+  );
+}
+
+function validateContainerAccessConfig(config: Config): void {
+  if (
+    toBool(config.createContainerIfNotExist) &&
+    toBool(config.publicContainer) &&
+    !getPublicAccessType(config)
+  ) {
+    throw new Error(
+      'publicContainer requires publicAccessType to be "blob" or "container" when createContainerIfNotExist is enabled.'
+    );
+  }
 }
 
 async function ensureContainerExists(
@@ -56,6 +77,8 @@ export async function handleUpload(
   blobSvcClient: BlobServiceClient,
   file: File
 ): Promise<void> {
+  validateContainerAccessConfig(config);
+
   const serviceBaseURL = getServiceBaseUrl(config);
   const containerName = trimParam(config.containerName);
   const containerClient = blobSvcClient.getContainerClient(containerName);
