@@ -19,13 +19,20 @@
   "author": "Ali Shaikh",
   "license": "MIT",
   "dependencies": {
-    "@azure/storage-blob": "^12.24.0"
+    "@azure/storage-blob": "^12.33.0"
   },
   "devDependencies": {
-    "typescript": "^5.0.0"
+    "@types/node": "^26.0.1",
+    "typescript": "^5.9.3"
+  },
+  "overrides": {
+    "fast-xml-parser": "^5.9.3"
   },
   "peerDependencies": {
     "@strapi/strapi": "^4.0.0 || ^5.0.0"
+  },
+  "engines": {
+    "node": ">=22.0.0"
   },
   "files": [
     "dist"

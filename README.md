@@ -14,7 +14,7 @@ Azure Blob Storage provider for Strapi with smart URL handling - clean URLs for 
 ## Requirements
 
 - **Strapi v4-v5**: This provider is compatible with Strapi version 4.x and 5.x
-- **Node.js v14 or higher**: Ensure you have Node.js version 14 or newer
+- **Node.js v22 or higher**: Required by the current Azure Blob Storage SDK
 - **Azure Blob Storage Account**: An Azure storage account with a Blob container
 
 ## Installation
@@ -39,6 +39,8 @@ npm install strapi-provider-upload-azure-clean
 | `defaultCacheControl` | string | No | | Set the `Cache-Control` header for uploaded files |
 | `removeCN` | string | No | | Set to `'true'` to remove the container name from the file URL |
 | `publicContainer` | string | No | | Set to `'true'` for public containers with clean URLs |
+| `createContainerIfNotExist` | string | No | | Set to `'true'` to create the Azure Blob container automatically when uploading |
+| `publicAccessType` | string | No | | Optional access level for auto-created containers. Use `'blob'` or `'container'`; omit for private containers |
 
 ### Configure the Provider in Strapi
 
@@ -62,6 +64,8 @@ module.exports = ({ env }) => ({
         defaultCacheControl: env('AZURE_DEFAULT_CACHE_CONTROL'),
         removeCN: env('AZURE_REMOVE_CN'),
         publicContainer: env('AZURE_PUBLIC_CONTAINER'),
+        createContainerIfNotExist: env('AZURE_CREATE_CONTAINER_IF_NOT_EXIST'),
+        publicAccessType: env('AZURE_PUBLIC_ACCESS_TYPE'),
       },
     },
   },
@@ -98,6 +102,10 @@ AZURE_REMOVE_CN=true
 
 # Optional: Public Container (for clean URLs)
 AZURE_PUBLIC_CONTAINER=true
+
+# Optional: Auto-create the container. Containers are private unless AZURE_PUBLIC_ACCESS_TYPE is set.
+AZURE_CREATE_CONTAINER_IF_NOT_EXIST=true
+AZURE_PUBLIC_ACCESS_TYPE=blob
 ```
 
 ### Security Middleware Configuration
@@ -161,6 +169,10 @@ module.exports = [
 - **`removeCN`** (optional): Some Azure account configurations exclude the 'container name' from the URL where data is saved. By default, it's set to `false`. If you want to remove the container name from the URL, set it to `'true'`.
 
 - **`publicContainer`** (optional): Set to `'true'` for public containers to generate clean URLs without SAS token parameters.
+
+- **`createContainerIfNotExist`** (optional): Set to `'true'` to create the configured container automatically on upload if it does not already exist.
+
+- **`publicAccessType`** (optional): Applies only when `createContainerIfNotExist` creates a container. Set to `'blob'` or `'container'` if the new container should be public. Leave unset to create a private container.
 
 ## Usage Examples
 
