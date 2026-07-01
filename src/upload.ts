@@ -7,6 +7,50 @@ const uploadOptions = {
   maxBuffers: 20,
 };
 
+const containerCreationPromises = new WeakMap<BlobServiceClient, Map<string, Promise<void>>>();
+
+function getPublicAccessType(config: Config): 'blob' | 'container' | undefined {
+  const publicAccessType = trimParam(config.publicAccessType);
+  return publicAccessType === 'blob' || publicAccessType === 'container'
+    ? publicAccessType
+    : undefined;
+}
+
+async function ensureContainerExists(
+  config: Config,
+  blobSvcClient: BlobServiceClient,
+  containerName: string
+): Promise<void> {
+  if (!toBool(config.createContainerIfNotExist)) {
+    return;
+  }
+
+  const publicAccessType = getPublicAccessType(config);
+  const cacheKey = `${containerName}:${publicAccessType || 'private'}`;
+  let clientCache = containerCreationPromises.get(blobSvcClient);
+
+  if (!clientCache) {
+    clientCache = new Map<string, Promise<void>>();
+    containerCreationPromises.set(blobSvcClient, clientCache);
+  }
+
+  let creationPromise = clientCache.get(cacheKey);
+
+  if (!creationPromise) {
+    const containerClient = blobSvcClient.getContainerClient(containerName);
+    creationPromise = containerClient
+      .createIfNotExists({ access: publicAccessType })
+      .then(() => undefined)
+      .catch((err) => {
+        clientCache.delete(cacheKey);
+        throw err;
+      });
+    clientCache.set(cacheKey, creationPromise);
+  }
+
+  await creationPromise;
+}
+
 export async function handleUpload(
   config: Config,
   blobSvcClient: BlobServiceClient,
@@ -16,15 +60,7 @@ export async function handleUpload(
   const containerName = trimParam(config.containerName);
   const containerClient = blobSvcClient.getContainerClient(containerName);
 
-  if (toBool(config.createContainerIfNotExist)) {
-    const publicAccessType = trimParam(config.publicAccessType);
-    await containerClient.createIfNotExists({
-      access:
-        publicAccessType === 'blob' || publicAccessType === 'container'
-          ? publicAccessType
-          : undefined,
-    });
-  }
+  await ensureContainerExists(config, blobSvcClient, containerName);
 
   const client = containerClient.getBlockBlobClient(getFileName(config.defaultPath, file));
   const options = {

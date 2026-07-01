@@ -29,7 +29,7 @@ module.exports = {
       type: "text",
     },
     createContainerIfNotExist: {
-      label: "Create container on upload if it does not (optional)",
+      label: "Create container on upload if it does not exist (optional)",
       type: "text",
     },
     publicAccessType: {

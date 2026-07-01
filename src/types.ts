@@ -12,7 +12,7 @@ export interface Config {
   removeCN?: string;
   publicContainer?: string;
   createContainerIfNotExist?: string;
-  publicAccessType?: 'blob' | 'container';
+  publicAccessType?: string;
 }
 
 export interface File {
