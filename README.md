@@ -174,6 +174,8 @@ module.exports = [
 
 - **`publicAccessType`** (optional): Applies only when `createContainerIfNotExist` creates a container. Set to `'blob'` or `'container'` if the new container should be public. Leave unset to create a private container.
 
+  If `publicContainer` and `createContainerIfNotExist` are both set to `'true'`, `publicAccessType` must also be set to `'blob'` or `'container'`. This prevents the provider from creating a private container while returning SAS-free public URLs.
+
 ## Usage Examples
 
 ### Example 1: Using SAS Token Authentication
