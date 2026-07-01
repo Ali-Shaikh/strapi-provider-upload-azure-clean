@@ -1,11 +1,55 @@
 import { Config, File } from './types';
 import { BlobServiceClient } from '@azure/storage-blob';
-import { getServiceBaseUrl, getFileName, trimParam } from './utils';
+import { getServiceBaseUrl, getFileName, trimParam, toBool } from './utils';
 
 const uploadOptions = {
   bufferSize: 4 * 1024 * 1024,
   maxBuffers: 20,
 };
+
+const containerCreationPromises = new WeakMap<BlobServiceClient, Map<string, Promise<void>>>();
+
+function getPublicAccessType(config: Config): 'blob' | 'container' | undefined {
+  const publicAccessType = trimParam(config.publicAccessType);
+  return publicAccessType === 'blob' || publicAccessType === 'container'
+    ? publicAccessType
+    : undefined;
+}
+
+async function ensureContainerExists(
+  config: Config,
+  blobSvcClient: BlobServiceClient,
+  containerName: string
+): Promise<void> {
+  if (!toBool(config.createContainerIfNotExist)) {
+    return;
+  }
+
+  const publicAccessType = getPublicAccessType(config);
+  const cacheKey = `${containerName}:${publicAccessType || 'private'}`;
+  let clientCache = containerCreationPromises.get(blobSvcClient);
+
+  if (!clientCache) {
+    clientCache = new Map<string, Promise<void>>();
+    containerCreationPromises.set(blobSvcClient, clientCache);
+  }
+
+  let creationPromise = clientCache.get(cacheKey);
+
+  if (!creationPromise) {
+    const containerClient = blobSvcClient.getContainerClient(containerName);
+    creationPromise = containerClient
+      .createIfNotExists({ access: publicAccessType })
+      .then(() => undefined)
+      .catch((err) => {
+        clientCache.delete(cacheKey);
+        throw err;
+      });
+    clientCache.set(cacheKey, creationPromise);
+  }
+
+  await creationPromise;
+}
 
 export async function handleUpload(
   config: Config,
@@ -13,7 +57,11 @@ export async function handleUpload(
   file: File
 ): Promise<void> {
   const serviceBaseURL = getServiceBaseUrl(config);
-  const containerClient = blobSvcClient.getContainerClient(trimParam(config.containerName));
+  const containerName = trimParam(config.containerName);
+  const containerClient = blobSvcClient.getContainerClient(containerName);
+
+  await ensureContainerExists(config, blobSvcClient, containerName);
+
   const client = containerClient.getBlockBlobClient(getFileName(config.defaultPath, file));
   const options = {
     blobHTTPHeaders: {
@@ -22,12 +70,11 @@ export async function handleUpload(
     },
   };
   const cdnBaseURL = trimParam(config.cdnBaseURL);
-  const publicContainer = trimParam(config.publicContainer);
   
   // Only strip SAS token from URL if container is public
   let finalUrl = client.url;
   
-  if (publicContainer === 'true') {
+  if (toBool(config.publicContainer)) {
     // For public containers, strip SAS token from URL
     const urlParts = finalUrl.split('?');
     const baseUrl = urlParts[0];
@@ -35,15 +82,11 @@ export async function handleUpload(
   }
   
   file.url = cdnBaseURL
-    ? finalUrl.replace(serviceBaseURL, cdnBaseURL)
+    ? finalUrl.replace(serviceBaseURL, cdnBaseURL.replace(/\/$/, ''))
     : finalUrl;
 
-  if (
-    file.url.includes(`/${config.containerName}/`) &&
-    config.removeCN &&
-    config.removeCN === 'true'
-  ) {
-    file.url = file.url.replace(`/${config.containerName}/`, '/');
+  if (toBool(config.removeCN) && file.url.includes(`/${containerName}/`)) {
+    file.url = file.url.replace(`/${containerName}/`, '/');
   }
 
   if (file.buffer) {
